@@ -1,7 +1,7 @@
 aniso8601==9.0.1
 annotated-types==0.7.0
 anyio==4.4.0
-gunicorn==19.7.1
+gunicorn==19.9.0
 psycopg
 appdirs==1.4.4
 attrs==24.2.0
