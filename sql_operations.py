@@ -3,18 +3,16 @@ import mysql.connector.pooling
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db_config = {
-    "host": "localhost",
-    "user": "root", #xxannydev
-    "password": "oMemf2812!",  #nFCZhA-hWLN5xUmxaKI-ow
-    "ssl_disabled": True
+    "host": "94.62.133.84",
+    "user": "xxannydev", #xxannydev
+    "password": "oMemf2812!"  #nFCZhA-hWLN5xUmxaKI-ow
 }
 
 users_db_config = {
-    "host": "localhost",
-    "user": "root",
+    "host": "94.62.133.84",
+    "user": "xxannydev",
     "password": "oMemf2812!",
     "database": "websitedata",
-    "ssl_disabled": True
 }
 
 db_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name="mypool", pool_size=5, **db_config)
