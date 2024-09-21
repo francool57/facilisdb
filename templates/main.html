@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FacilisDB - Welcome</title>
+    <link rel="stylesheet" type="text/css" href="/static/login.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='database-512.png') }}">
+</head>
+<body>
+    <nav class="top-nav">
+        <a class="nav-item"><img src="{{ url_for('static', filename='database-512.png') }}" alt="FacilisDB Logo" class="logonav"></a>
+        <a href="/" class="nav-item">Home</a>
+        <a href="/pricing" class="nav-item">Pricing</a>
+        <a href="#" class="nav-item" id="loginBtn">Login</a>
+    </nav>
+    <div class="container">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='database-512.png') }}" alt="FacilisDB Logo" class="logo">
+        </div>
+        <div class="action-container">
+            <h1>Your data, your control.</h1>
+            <h2>Managing your data is easy with FacilisDB.</h2>
+            <button id="signUpBtn" class="btn btn-primary" onclick="openModal(true)">Create account</button>
+            <p>By signing up, you agree to the Terms of Service and Privacy Policy, including Cookie Use.</p>
+            <div class="sign-in">
+                <p>Already have an account?</p>
+                <button id="signInBtn" class="btn btn-outline" onclick="openModal(false)">Sign in</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form id="authForm">
+                <h2 id="formTitle">Sign In</h2>
+                <div class="input-group">
+                    <input type="email" id="email" name="email" placeholder=" " required>
+                    <label for="email">Email</label>
+                </div>
+                <div class="input-group" id="usernameGroup" style="display:none;">
+                    <input type="text" id="username" name="username" placeholder=" ">
+                    <label for="username">Username</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" placeholder=" " required>
+                    <label for="password">Password</label>
+                </div>
+                <button type="submit" class="btn btn-submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <a href="/about-us">About Us</a>
+        <a href="#">Help Center</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Cookie Policy</a>
+        <span>© 2024 FacilisDB Corp.</span>
+    </footer>
+
+    <script>
+        const modal = document.getElementById('modal');
+        const signUpBtn = document.getElementById('signUpBtn');
+        const signInBtn = document.getElementById('signInBtn');
+        const closeBtn = document.getElementsByClassName('close')[0];
+        const formTitle = document.getElementById('formTitle');
+        const usernameGroup = document.getElementById('usernameGroup');
+        const authForm = document.getElementById('authForm');
+
+        function openModal(isSignUp) {
+            modal.style.display = 'block';
+            formTitle.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+            usernameGroup.style.display = isSignUp ? 'block' : 'none';
+            authForm.action = isSignUp ? '{{ url_for("register") }}' : '{{ url_for("login") }}';
+        }
+
+        signUpBtn.onclick = () => openModal(true);
+        signInBtn.onclick = () => openModal(false);
+        closeBtn.onclick = () => modal.style.display = 'none';
+
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        authForm.onsubmit = (e) => {
+            e.preventDefault();
+            const formData = new FormData(authForm);
+            fetch(authForm.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+
+        // Add this to handle the login button click
+        document.getElementById('loginBtn').onclick = () => openModal(false);
+    </script>
+</body>
+</html>

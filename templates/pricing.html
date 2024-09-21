@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FacilisDB - Pricing</title>
+    <link rel="stylesheet" type="text/css" href="/static/pricing.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='database-512.png') }}">
+</head>
+
+<body>
+    <nav class="top-nav">
+        <a class="nav-item"><img src="{{ url_for('static', filename='database-512.png') }}" alt="FacilisDB Logo" class="logonav"></a>
+        <a href="/" class="nav-item">Home</a>
+        <a href="/pricing" class="nav-item">Pricing</a>
+        <a href="#" class="nav-item" id="loginBtn">Login</a>
+    </nav>
+    <div class="container">
+        <div class="action-container">
+            <h1>Pricing Plans</h1>
+            <div class="pricing-plans">
+                <div class="plan">
+                    <h2>Basic</h2>
+                    <p class="price">$9.99/month</p>
+                    <ul>
+                        <li>Up to 5 databases</li>
+                        <li>1GB storage</li>
+                        <li>Basic support</li>
+                    </ul>
+                    <button class="btn btn-primary btn-choose1">Choose Plan</button>
+                </div>
+                <div class="plan featured">
+                    <h2>Pro</h2>
+                    <p class="price">$19.99/month</p>
+                    <ul>
+                        <li>Up to 20 databases</li>
+                        <li>10GB storage</li>
+                        <li>Priority support</li>
+                        <li>Advanced analytics</li>
+                    </ul>
+                    <button class="btn btn-primary btn-choose">Choose Plan</button>
+                </div>
+                <div class="plan">
+                    <h2>Enterprise</h2>
+                    <p class="price">Contact us</p>
+                    <ul>
+                        <li>Unlimited databases</li>
+                        <li>Custom storage</li>
+                        <li>24/7 support</li>
+                        <li>Custom features</li>
+                    </ul>
+                    <button class="btn btn-outline btn-choose1">Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form id="authForm">
+                <h2 id="formTitle">Sign In</h2>
+                <div class="input-group">
+                    <input type="email" id="email" name="email" placeholder=" " required>
+                    <label for="email">Email</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" placeholder=" " required>
+                    <label for="password">Password</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <a href="/about-us">About Us</a>
+        <a href="#">Help Center</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Cookie Policy</a>
+        <span>© 2024 FacilisDB Corp.</span>
+    </footer>
+
+    <script>
+        const modal = document.getElementById('modal');
+        const loginBtn = document.getElementById('loginBtn');
+        const closeBtn = document.getElementsByClassName('close')[0];
+        const authForm = document.getElementById('authForm');
+
+        loginBtn.onclick = () => {
+            modal.style.display = 'block';
+        };
+
+        closeBtn.onclick = () => modal.style.display = 'none';
+
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        authForm.onsubmit = (e) => {
+            e.preventDefault();
+            const formData = new FormData(authForm);
+            fetch('{{ url_for("login") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        };
+    </script>
+</body>
+</html>

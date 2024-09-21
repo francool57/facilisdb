@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - FacilisDB</title>
+    <link rel="stylesheet" type="text/css" href="/static/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='database-512.png') }}">
+
+    <script>
+        function validateForm() {
+            var email = document.forms["registerForm"]["email"].value;
+            var password = document.forms["registerForm"]["password"].value;
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            var passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+            if (!emailRegex.test(email)) {
+                alert("Please enter a valid email address.");
+                return false;
+            }
+
+            if (!passwordRegex.test(password)) {
+                alert("Password must contain at least 8 characters, including uppercase, lowercase, a number and special character.");
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="company-name">FacilisDB</h1>
+        </header>
+        
+        <main>
+            <section class="login-section">
+                <div class="login-container">
+                    <form class="login-form" method="POST" action="{{ url_for('register') }}" onsubmit="return validateForm()" name="registerForm">
+                        <h2>Register</h2>
+                        {% if error %}
+                        <p class="error">{{ error|e }}</p>  <!-- XSS Prevention -->
+                        {% endif %}
+                        <div class="input-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="text" name="email" placeholder="Email" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" name="username" placeholder="Username" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" name="password" placeholder="Password" required>
+                        </div>
+                        <button type="submit">Register</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+        <footer>
+            <p>&copy; 2024 FacilisDB</p>
+        </footer>
+    </div>
+</body>
+</html>

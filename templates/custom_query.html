@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Query - FacilisDB</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='database-512.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/sql/sql.min.js"></script>
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='database-512.png') }}" alt="FacilisDB Logo" class="logonav">
+        <h1>Custom Query</h1>
+    </header>
+    
+    <div class="main-container">
+        <nav class="sidebar">
+            <ul class="sidebar-top">
+                <li><a href="/"><i class="fas fa-home icon"></i><span class="full-text">Home</span></a></li>
+                <li><a href="/create_table"><i class="fas fa-plus-square icon"></i><span class="full-text">Create Table</span></a></li>
+                <li><a href="/update_table"><i class="fas fa-edit icon"></i><span class="full-text">Update Table</span></a></li>
+                <li><a href="/custom_query"><i class="fas fa-code icon"></i><span class="full-text">Custom Query</span></a></li>
+                <li><a href="/custom_charts"><i class="fas fa-chart-bar icon"></i><span class="full-text">Custom Charts</span></a></li>
+            </ul>
+            <ul class="sidebar-bottom">
+                <li><a href="/profile"><i class="fas fa-user icon"></i><span class="full-text">Profile</span></a></li>
+                <li><a href="/logout"><i class="fas fa-sign-out-alt icon"></i><span class="full-text">Logout</span></a></li>
+            </ul>
+        </nav>
+        
+        <div class="content">
+            <main class="fade-in">
+                <h2>Execute Custom SQL Query</h2>
+                <form id="queryForm" class="fade-in">
+                    <label for="query">SQL Query:</label>
+                    <textarea id="query-editor" name="query" rows="10" placeholder="SELECT * FROM your_table_name"></textarea>
+                    
+                    <button type="submit">Execute Query</button>
+                </form>
+                <div id="query-result"></div>
+            </main>
+            <footer>
+                <p>&copy; 2024 FacilisDB</p>
+            </footer>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var editor = CodeMirror.fromTextArea(document.getElementById("query-editor"), {
+                mode: "text/x-sql",
+                theme: "default",
+                lineNumbers: true,
+                autofocus: true
+            });
+
+            $('#queryForm').submit(function(e) {
+                e.preventDefault();
+                var query = editor.getValue();
+                $('#query-result').html('<div class="spinner"></div>');
+                $.ajax({
+                    url: '/custom_query',
+                    type: 'POST',
+                    data: { query: query },
+                    success: function(response) {
+                        $('#query-result').html(response);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#query-result').html('<p style="color: red;">Error: ' + error + '</p>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

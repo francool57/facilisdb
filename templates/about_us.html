@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - FacilisDB</title>
+    <link rel="stylesheet" href="/static/about_us.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='database-512.png') }}">
+</head>
+<body>
+    <nav class="top-nav">
+        <a class="nav-item"><img src="{{ url_for('static', filename='database-512.png') }}" alt="FacilisDB Logo" class="logonav"></a>
+        <a href="/" class="nav-item">Home</a>
+        <a href="/pricing" class="nav-item">Pricing</a>
+        <a href="#" class="nav-item" id="loginBtn">Login</a>
+    </nav>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='database-512.png') }}" alt="FacilisDB Logo" class="logo">
+            </div>
+            <div class="content-container">
+                <h1>About Us</h1>
+                <p>FacilisDB is a project that aims to provide a simple and efficient database solution.</p>
+                <p>With so much bloated software out there, we decided to create a simple and efficient database solution for businesses who want to take their data storage to the next level.</p>
+            </div>
+        </div>
+        
+        <div class="content-sections">
+            <div class="team-section">
+                <h2>Our Team</h2>
+                <div class="team-member">
+                    <a href="https://github.com/francool57" target="_blank"><img src="{{ url_for('static', filename='gojo.gif') }}" alt="Developer Name"></a>
+                    <p>Francisco Barreira</p>
+                </div>
+                <!-- Add more team members as needed -->
+            </div>
+
+            <div class="features-section">
+                <h2>Features</h2>
+                <ul>
+                    <li>Custom graphs and charts</li>
+                    <li>No more complicated database management</li>
+                    <li>Simple and efficient database solution</li>
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form id="authForm">
+                <h2 id="formTitle">Sign In</h2>
+                <div class="input-group">
+                    <input type="email" id="email" name="email" placeholder=" " required>
+                    <label for="email">Email</label>
+                </div>
+                <div class="input-group" id="usernameGroup" style="display:none;">
+                    <input type="text" id="username" name="username" placeholder=" ">
+                    <label for="username">Username</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" placeholder=" " required>
+                    <label for="password">Password</label>
+                </div>
+                <button type="submit" class="btn btn-submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <a href="/">Home</a>
+        <a href="#">Help Center</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Cookie Policy</a>
+        <span>© 2024 FacilisDB Corp.</span>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+          setTimeout(() => {
+            document.documentElement.style.overflow = 'auto';
+            document.body.style.overflow = 'auto';
+          }, 500);
+        });
+
+        const modal = document.getElementById('modal');
+        const loginBtn = document.getElementById('loginBtn');
+        const closeBtn = document.getElementsByClassName('close')[0];
+        const authForm = document.getElementById('authForm');
+
+        loginBtn.onclick = () => {
+            modal.style.display = 'block';
+        };
+
+        closeBtn.onclick = () => modal.style.display = 'none';
+
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        authForm.onsubmit = (e) => {
+            e.preventDefault();
+            const formData = new FormData(authForm);
+            fetch('{{ url_for("login") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        };
+    </script>
+</body>
+</html>

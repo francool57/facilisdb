@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FacilisDB - Custom Charts</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='database-512.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+    .content {
+        flex: 1;
+        margin-left: var(--sidebar-width);
+        padding: 20px;
+        transition: margin-left var(--transition-speed) ease;
+        background-color: var(--background-color);
+        border-radius: 10px;
+        min-height: calc(100vh - var(--header-height) - 40px);
+        padding-bottom: 60px; /* Add this line to ensure content doesn't overlap with footer */
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1600;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.6);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal.show {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-content {
+        background-color: #192734;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        width: 90%;
+        max-width: 1000px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transform: translateY(-50px);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .modal.show .modal-content {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+    .new-chart{
+        margin-top: 30px;
+        
+    }
+    .close:hover,
+    .close:focus {
+        color: #fff;
+        text-decoration: none;
+    }
+
+    #modalChartName {
+        color: var(--primary-color);
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .modal-chart-container {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    #downloadChart {
+        display: block;
+        width: 200px;
+        margin: 20px auto 0;
+        padding: 12px 20px;
+        background-color: var(--secondary-color);
+        color: white;
+        border: none;
+        border-radius: 9999px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+    #downloadChart:hover {
+        background-color: #15a954;
+    }
+    
+    .ww{
+        color: white;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    body.modal-open {
+        overflow: hidden;
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='database-512.png') }}" alt="FacilisDB Logo" class="logonav">
+        <h1>Custom Charts</h1>
+    </header>
+    <div class="main-container">
+        <nav class="sidebar">
+            <ul class="sidebar-top">
+                <li><a href="/"><i class="fas fa-home icon"></i><span class="full-text">Home</span></a></li>
+                <li><a href="/create_table"><i class="fas fa-plus-square icon"></i><span class="full-text">Create Table</span></a></li>
+                <li><a href="/update_table"><i class="fas fa-edit icon"></i><span class="full-text">Update Table</span></a></li>
+                <li><a href="/custom_query"><i class="fas fa-code icon"></i><span class="full-text">Custom Query</span></a></li>
+                <li><a href="/custom_charts"><i class="fas fa-chart-bar icon"></i><span class="full-text">Custom Charts</span></a></li>
+            </ul>
+            <ul class="sidebar-bottom">
+                <li><a href="/profile"><i class="fas fa-user icon"></i><span class="full-text">Profile</span></a></li>
+                <li><a href="/logout"><i class="fas fa-sign-out-alt icon"></i><span class="full-text">Logout</span></a></li>
+            </ul>
+        </nav>
+        <div class="content">
+            <main class="fade-in">
+                <div id="saved-charts" data-charts='{{ saved_charts|tojson|safe }}'>
+                    
+                    {% if saved_charts == null or saved_charts == [] %}
+                    <h3>No charts saved yet</h3>
+                    {% else %}
+                    <h3>Saved Charts</h3>
+                    {% endif %}
+                    <div class="table-grid">
+                        {% for chart in saved_charts %}
+                        <div class="table-preview" id="chart-{{ chart[0] }}">
+                            <h4>{{ chart[1] }}</h4>
+                            <div class="table-content">
+                                <canvas id="savedChart{{ chart[0] }}" style="height: 200px;"></canvas>
+                            </div>
+                            <div class="table-actions">
+                                <button class="delete-chart" data-chart-id="{{ chart[0] }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                                <button class="view-more" data-chart-id="{{ chart[0] }}">View More</button>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div id="chart-creator" class="new-chart">
+                    <form id="chart-form">
+                        <div class="form-group">
+                            <label class="ww" for="chart-name">Create a new chart</label>
+                            <label for="chart-name">Chart Name:</label>
+                            <input type="text" id="chart-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="chart-type">Chart Type:</label>
+                            <select id="chart-type" required>
+                                <option value="bar">Bar Chart</option>
+                                <option value="line">Line Chart</option>
+                                <option value="pie">Pie Chart</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="table-select">Select Table:</label>
+                            <select id="table-select" required>
+                                <option value="">Select a table</option>
+                                {% for table in tables %}
+                                <option value="{{ table }}">{{ table }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="x-axis">X-Axis (Labels):</label>
+                            <select id="x-axis" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="y-axis">Y-Axis (Values):</label>
+                            <select id="y-axis" required></select>
+                        </div>
+                        <button type="submit">Generate Chart</button>
+                    </form>
+                </div>
+                <div id="chart-container" style="display: none;">
+                    <canvas id="myChart" ></canvas>
+                </div>
+            </main>
+        </div>
+    </div>
+
+<!-- Modal for full chart view -->
+<div id="chartModal" class="modal fade-in">
+    <div class="modal-content fade-in">
+        <span class="close fade-in">&times;</span>
+        <h2 id="modalChartName fade-in"></h2>
+        <div class="modal-chart-container fade-in">
+            <canvas id="modalChart"></canvas>
+        </div>
+        <button id="downloadChart" class="download-button">Download Chart</button>
+    </div>
+</div>
+
+
+    <footer>
+        <p>&copy; 2024 FacilisDB</p>
+    </footer>
+    <script>
+        $(document).ready(function() {
+            let myChart = null;
+            let modalChart = null;
+
+            // Populate column selects when a table is chosen
+            $('#table-select').change(function() {
+                const table = $(this).val();
+                $.getJSON(`/get_columns/${table}`, function(columns) {
+                    $('#x-axis, #y-axis').empty();
+                    columns.forEach(column => {
+                        $('#x-axis, #y-axis').append(`<option value="${column}">${column}</option>`);
+                    });
+                });
+            });
+
+            // Generate chart on form submit
+            $('#chart-form').submit(function(e) {
+                e.preventDefault();
+                const chartData = {
+                    name: $('#chart-name').val(),
+                    type: $('#chart-type').val(),
+                    table: $('#table-select').val(),
+                    x_axis: $('#x-axis').val(),
+                    y_axis: $('#y-axis').val()
+                };
+
+                $.ajax({
+                    url: '/get_chart_data',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(chartData),
+                    success: function(data) {
+                        if (data.error) {
+                            console.error('Error fetching chart data:', data.error);
+                            alert('Error fetching chart data: ' + data.error);
+                            return;
+                        }
+                        if (data.labels.length === 0 || data.values.length === 0) {
+                            alert('No data available for the selected columns.');
+                            return;
+                        }
+                        createChart(chartData.type, data.labels, data.values);
+                        $('#chartModal').show();
+                        
+                        // Save the chart
+                        $.ajax({
+                            url: '/custom_charts',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(chartData),
+                            success: function(response) {
+                                if (response.success) {
+                                    alert('Chart saved successfully!');
+                                    location.reload(); // Reload to show the new saved chart
+                                } else {
+                                    alert('Error saving chart: ' + response.message);
+                                }
+                            },
+                            error: function(jqXHR, textStatus, errorThrown) {
+                                console.error('Error saving chart:', textStatus, errorThrown);
+                                alert('Error saving chart. Please try again.');
+                            }
+                        });
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error fetching chart data:', textStatus, errorThrown);
+                        alert('Error fetching chart data. Please try again.');
+                    }
+                });
+            });
+
+            function createChart(type, labels, values) {
+                // Sort the labels and values together
+                let combined = labels.map((label, index) => ({ label, value: values[index] }));
+                combined.sort((a, b) => {
+                    // If labels are numbers, sort numerically
+                    if (!isNaN(a.label) && !isNaN(b.label)) {
+                        return Number(a.label) - Number(b.label);
+                    }
+                    // Otherwise, sort alphabetically
+                    return a.label.localeCompare(b.label);
+                });
+
+                // Separate the sorted labels and values
+                labels = combined.map(item => item.label);
+                values = combined.map(item => item.value);
+
+                const ctx = document.getElementById('myChart').getContext('2d');
+                if (myChart) {
+                    myChart.destroy();
+                }
+                myChart = new Chart(ctx, {
+                    type: type,
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: $('#chart-name').val(),
+                            data: values,
+                            backgroundColor: 'rgba(22, 26, 31, 0.6)',
+                            borderColor: 'rgba(22, 26, 31, 0.6)', // Change to black
+                            borderWidth: 2 // Increased for better visibility
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)' // Lighter grid lines
+                                },
+                                ticks: {
+                                    color: 'black' // black y-axis labels
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)' // Lighter grid lines
+                                },
+                                ticks: {
+                                    color: 'black' // black x-axis labels
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'black' // black legend text
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Load saved charts
+            const savedCharts = JSON.parse($('#saved-charts').attr('data-charts'));
+            savedCharts.forEach(function(chart) {
+                $.ajax({
+                    url: '/get_chart_data',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        table: chart[3],
+                        x_axis: chart[4],
+                        y_axis: chart[5]
+                    }),
+                    success: function(data) {
+                        if (data.error) {
+                            console.error('Error fetching saved chart data:', data.error);
+                            return;
+                        }
+                        if (data.labels.length === 0 || data.values.length === 0) {
+                            console.error('No data available for saved chart:', chart[1]);
+                            return;
+                        }
+
+                        // Sort the data
+                        let combined = data.labels.map((label, index) => ({ label, value: data.values[index] }));
+                        combined.sort((a, b) => {
+                            if (!isNaN(a.label) && !isNaN(b.label)) {
+                                return Number(a.label) - Number(b.label);
+                            }
+                            return a.label.localeCompare(b.label);
+                        });
+
+                        // Separate the sorted labels and values
+                        data.labels = combined.map(item => item.label);
+                        data.values = combined.map(item => item.value);
+
+                        const ctx = document.getElementById('savedChart' + chart[0]).getContext('2d');
+                        new Chart(ctx, {
+                            type: chart[2],
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    label: chart[1],
+                                    data: data.values,
+                                    backgroundColor: 'rgba(22, 26, 31, 1)',
+                                    borderColor: 'rgba(255, 255, 255, 1)', // Change to black
+                                    borderWidth: 2 // Increased for better visibility
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: {
+                                            color: 'rgba(255, 255, 255, 0.1)' // Lighter grid lines
+                                        },
+                                        ticks: {
+                                            color: 'white' // black y-axis labels
+                                        }
+                                    },
+                                    x: {
+                                        grid: {
+                                            color: 'rgba(255, 255, 255, 0.1)' // Lighter grid lines
+                                        },
+                                        ticks: {
+                                            color: 'white' // black x-axis labels
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        labels: {
+                                            color: 'white' // black legend text
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error fetching saved chart data:', textStatus, errorThrown);
+                    }
+                });
+            });
+
+            // View More button
+            $('.view-more').click(function() {
+                const chartId = $(this).data('chart-id');
+                const chart = savedCharts.find(c => c[0] == chartId);
+                $('#modalChartName').text(chart[1]);
+                
+                $.ajax({
+                    url: '/get_chart_data',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        table: chart[3],
+                        x_axis: chart[4],
+                        y_axis: chart[5]
+                    }),
+                    success: function(data) {
+                        if (data.error) {
+                            console.error('Error fetching chart data:', data.error);
+                            alert('Error fetching chart data: ' + data.error);
+                            return;
+                        }
+
+                        // Sort the data
+                        let combined = data.labels.map((label, index) => ({ label, value: data.values[index] }));
+                        combined.sort((a, b) => {
+                            if (!isNaN(a.label) && !isNaN(b.label)) {
+                                return Number(a.label) - Number(b.label);
+                            }
+                            return a.label.localeCompare(b.label);
+                        });
+
+                        // Separate the sorted labels and values
+                        data.labels = combined.map(item => item.label);
+                        data.values = combined.map(item => item.value);
+
+                        const ctx = document.getElementById('modalChart').getContext('2d');
+                        if (modalChart) {
+                            modalChart.destroy();
+                        }
+                        modalChart = new Chart(ctx, {
+                            type: chart[2],
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    label: chart[1],
+                                    data: data.values,
+                                    backgroundColor: 'rgba(22, 26, 31, 1)',
+                                    borderColor: 'rgba(255, 255, 255, 1)', // Change to black
+                                    borderWidth: 2 // Increased for better visibility
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: {
+                                            color: 'rgba(255, 255, 255, 0.1)' // Lighter grid lines
+                                        },
+                                        ticks: {
+                                            color: 'white' // black y-axis labels
+                                        }
+                                    },
+                                    x: {
+                                        grid: {
+                                            color: 'rgba(255, 255, 255, 0.1)' // Lighter grid lines
+                                        },
+                                        ticks: {
+                                            color: 'white' // black x-axis labels
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        labels: {
+                                            color: 'white' // black legend text
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        $('#chartModal').css('display', 'flex').addClass('show');
+                        $('body').addClass('modal-open');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error fetching chart data:', textStatus, errorThrown);
+                        alert('Error fetching chart data. Please try again.');
+                    }
+                });
+            });
+
+            // Close modal
+            $('.close, #chartModal').click(function(e) {
+                if (e.target == this || $(e.target).hasClass('close')) {
+                    $('#chartModal').removeClass('show');
+                    setTimeout(function() {
+                        $('#chartModal').css('display', 'none');
+                        $('body').removeClass('modal-open');
+                    }, 300);
+                }
+            });
+
+            // Download chart
+            $('#downloadChart').click(function() {
+                const canvas = document.getElementById('modalChart');
+                const ctx = canvas.getContext('2d');
+                
+                // Store the current background color and chart options
+                const currentBgColor = modalChart.options.plugins.legend.labels.color;
+                const currentOptions = JSON.parse(JSON.stringify(modalChart.options));
+                
+                // Change background to black and adjust options for download
+                modalChart.options.plugins.legend.labels.color = 'black';
+                modalChart.options.scales.x.ticks.color = 'black';
+                modalChart.options.scales.y.ticks.color = 'black';
+                modalChart.options.plugins.title.color = 'black';
+                modalChart.options.backgroundColor = 'black';
+                modalChart.update();
+                
+                // Create a new canvas with black background
+                const blackCanvas = document.createElement('canvas');
+                blackCanvas.width = canvas.width;
+                blackCanvas.height = canvas.height;
+                const blackCtx = blackCanvas.getContext('2d');
+                blackCtx.fillStyle = 'black';
+                blackCtx.fillRect(0, 0, blackCanvas.width, blackCanvas.height);
+                blackCtx.drawImage(canvas, 0, 0);
+
+                // Generate the image from the black canvas
+                const image = blackCanvas.toDataURL("image/png");
+                
+                // Create a safe filename
+                console.log($('#modalChartName').text());
+                const filename = $('#modalChartName').text().replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.png';
+                
+                // Create a Blob and download
+                const blob = dataURLtoBlob(image);
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = url;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                // Restore the original options
+                modalChart.options = currentOptions;
+                modalChart.update();
+            });
+
+            // Helper function to convert data URL to Blob
+            function dataURLtoBlob(dataURL) {
+                const arr = dataURL.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], {type: mime});
+            }
+
+            // Delete chart
+            $('.delete-chart').click(function() {
+                const chartId = $(this).data('chart-id');
+                if (confirm('Are you sure you want to delete this chart?')) {
+                    $.ajax({
+                        url: '/delete_chart',
+                        method: 'POST',
+                        data: { chart_id: chartId },
+                        success: function(response) {
+                            if (response.success) {
+                                $(`#chart-${chartId}`).remove();
+                            } else {
+                                alert('Error deleting chart');
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

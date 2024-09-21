@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Table - FacilisDB</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='database-512.png') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='database-512.png') }}" alt="FacilisDB Logo" class="logonav">
+        <h1>Update Table</h1>
+    </header>
+    <div class="main-container">
+        <nav class="sidebar">
+            <ul class="sidebar-top">
+                <li><a href="/"><i class="fas fa-home icon"></i><span class="full-text">Home</span></a></li>
+                <li><a href="/create_table"><i class="fas fa-plus-square icon"></i><span class="full-text">Create Table</span></a></li>
+                <li><a href="/update_table"><i class="fas fa-edit icon"></i><span class="full-text">Update Table</span></a></li>
+                <li><a href="/custom_query"><i class="fas fa-code icon"></i><span class="full-text">Custom Query</span></a></li>
+                <li><a href="/custom_charts"><i class="fas fa-chart-bar icon"></i><span class="full-text">Custom Charts</span></a></li>
+            </ul>
+            <ul class="sidebar-bottom">
+                <li><a href="/profile"><i class="fas fa-user icon"></i><span class="full-text">Profile</span></a></li>
+                <li><a href="/logout"><i class="fas fa-sign-out-alt icon"></i><span class="full-text">Logout</span></a></li>
+            </ul>
+        </nav>
+
+        <div class="content">
+            <main>
+                <form id="updateForm" class="fade-in">
+                    <label for="table">Select Table:</label>
+                    <select id="table" name="table" required>
+                        <option value="">Select a table</option>
+                    </select>
+
+                    <div id="spreadsheet-container" style="display: none;">
+                        <table id="spreadsheet">
+                            <thead>
+                                <tr id="header-row"></tr>
+                            </thead>
+                            <tbody id="data-rows">
+                            </tbody>
+                        </table>
+                        <button type="button" id="add-row-btn">Add Row</button>
+                        <button type="submit">Update Table</button>
+                    </div>
+                </form>
+                <div id="message"></div>
+            </main>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 FacilisDB</p>
+    </footer>
+
+    <script>
+        $(document).ready(function() {
+            function loadTables() {
+                $.getJSON('/get_tables', function(data) {
+                    const options = data.map(value => `<option value="${value}">${value}</option>`).join('');
+                    $('#table').html('<option value="">Select a table</option>' + options);
+                });
+            }
+
+            loadTables();
+
+            $('#table').change(function() {
+                const table = $(this).val();
+                if (table) {
+                    $.getJSON('/get_columns/' + table, function(data) {
+                        const headerRow = data.slice(1).map(value => `<th>${value}</th>`).join('');
+                        $('#header-row').html(headerRow);
+                        resetRows(data);
+                        $('#spreadsheet-container').show();
+                    });
+                } else {
+                    $('#spreadsheet-container').hide();
+                }
+            });
+
+            function addDataRow(columns) {
+                const dataRow = columns.slice(1).map(value => 
+                    `<td><input type="text" name="${value}[]" required></td>`
+                ).join('');
+                $('#data-rows').append(`<tr>${dataRow}</tr>`);
+            }
+
+            function resetRows(columns) {
+                $('#data-rows').empty();
+                if (columns && columns.length > 1) {
+                    addDataRow(columns);
+                }
+            }
+
+            $('#add-row-btn').click(function() {
+                const columns = ['id'].concat($('#header-row th').map(function() {
+                    return $(this).text();
+                }).get());
+                addDataRow(columns);
+            });
+
+            $('#updateForm').submit(function(e) {
+                e.preventDefault();
+                const table = $('#table').val();
+                const columns = ['id'].concat($('#header-row th').map(function() {
+                    return $(this).text();
+                }).get());
+
+                const jsonData = [
+                    {name: 'table', value: table}
+                ];
+
+                columns.slice(1).forEach(function(column) {
+                    const values = $(`#data-rows input[name="${column}[]"]`).map(function() {
+                        return $(this).val();
+                    }).get();
+                    jsonData.push({name: `${column}[]`, value: values});
+                });
+
+                $.ajax({
+                    url: '/update_table',
+                    type: 'POST',
+                    data: JSON.stringify(jsonData),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        $('#message').text(response.message);
+                        if (response.success) {
+                            $('#message').css('color', 'green');
+                            $('#data-rows input').val('');
+                            if (response.formatted_data) {
+                                const formattedDataHtml = response.formatted_data.replace(/\n/g, '<br>');
+                                $('#message').append('<br><br>Formatted Data:<br>' + formattedDataHtml);
+                            }
+                        } else {
+                            $('#message').css('color', 'red');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        $('#message').text('An error occurred while updating the table.').css('color', 'red');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
