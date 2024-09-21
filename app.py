@@ -4,7 +4,7 @@ from functools import wraps
 from werkzeug.security import check_password_hash
 from datetime import timedelta
 import os
-
+port=int(os.environ.get('PORT', 10000))
 app = Flask(__name__)
 #app.secret_key = str(os.urandom(12).hex())  # Set a secret key for session management
 app.secret_key = 'dawdad'
@@ -294,4 +294,4 @@ def get_chart_data():
 
 if __name__ == "__main__":
     sql_operations.ensure_database_structure()
-    app.run()
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
