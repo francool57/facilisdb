@@ -294,4 +294,4 @@ def get_chart_data():
 
 if __name__ == "__main__":
     sql_operations.ensure_database_structure()
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
+    app.run()
