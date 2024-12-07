@@ -30,23 +30,20 @@
 - **Flexible Import** - Add data your way
 - **Easy Updates** - Modify and maintain your datasets
 
-#### 👑 For VIP's
-### 📈 Visualization Suite
+### 📈 Visualization Suite (👑 VIP feature)
 - **Custom Charts** - Create stunning visualizations
 - **Save & Share** - Store your favorite configurations
 - **Interactive Experience** - Engage with your data
 
-## 🚀 Quick Start
+## 📘 Documentation
 
-### Prerequisites
+### Main requisits
 
 ```bash
 Python 3.x
 Flask
 MySQL
 ```
-
-## 📘 Documentation
 
 ### Project Structure
 ```
