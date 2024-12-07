@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FacilisDB - Not Eligible</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='database-512.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+
+    </style>
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='database-512.png') }}" alt="FacilisDB Logo" class="logonav">
+        <h1>FacilisDB</h1>
+    </header>
+    <div class="main-container">
+        <nav class="sidebar">
+            <ul class="sidebar-top">
+                <li><a href="/"><i class="fas fa-home icon"></i><span class="full-text">Home</span></a></li>
+                <li><a href="/create_table"><i class="fas fa-plus-square icon"></i><span class="full-text">Create Table</span></a></li>
+                <li><a href="/update_table"><i class="fas fa-edit icon"></i><span class="full-text">Update Table</span></a></li>
+                <li><a href="/custom_charts"><i class="fas fa-chart-bar icon"></i><span class="full-text">Custom Charts</span></a></li>
+            </ul>
+            <ul class="sidebar-bottom">
+                <li><a href="/profile"><i class="fas fa-user icon"></i><span class="full-text">Profile</span></a></li>
+                <li><a href="/logout"><i class="fas fa-sign-out-alt icon"></i><span class="full-text">Logout</span></a></li>
+            </ul>
+        </nav>
+        <div class="content" style="min-height: calc(100vh - var(--header-height) - var(--footer-height) - 600px);">
+            <div class="table-preview" style="padding: 40px; text-align: center;">
+                <h2>Not Eligible</h2>
+                <p>Your account does not have acess to use this feature.</p>
+                <a href="/pricing" class="btn" style="background-color: transparent; color: var(--secondary-color); padding: 8px 16px;">Upgrade here</a>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 FacilisDB</p>
+    </footer>
+</body>
+</html>

@@ -1,14 +1,15 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 import sql_operations
 from functools import wraps
-from werkzeug.security import check_password_hash
+from barr4 import verify
+from barr4 import encrypt
 from datetime import timedelta
 import os
-port=int(os.environ.get('PORT', 10000))
+from markupsafe import escape
+
 app = Flask(__name__)
-#app.secret_key = str(os.urandom(12).hex())  # Set a secret key for session management
-app.secret_key = 'dawdad'
-app.testing = True
+application = app
+app.secret_key = str(os.urandom(12).hex())  # Set a secret key for session management
 
 # Login required decorator
 def login_required(f):
@@ -21,21 +22,38 @@ def login_required(f):
 
 @app.route('/about-us')
 def about_us():
+
     return render_template('about_us.html')
 
-@app.route('/register', methods=['POST'])
+@app.route('/pricing')
+def pricing():
+    return render_template('pricing.html')
+
+@app.route('/not_eligible')  
+@login_required 
+def not_eligible():
+    return render_template('not_ellegible.html')
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('404.html')
+
+@app.route('/register', methods=['POST', 'GET'])
 def register():
-    username = request.form['username']
-    password = request.form['password']
-    email = request.form['email']
+    sql_operations.ensure_database_structure()
+    if request.method != 'POST':
+        return render_template('register.html')
+    username = (request.form['username'])
+    password = encrypt(request.form['password'])
+    email = (request.form['email'])
 
     if sql_operations.get_user_by_email(email):
-        return jsonify({"success": False, "error": 'Email is already registered'})
+        return render_template('register.html', error='Email already registered')
     
     sql_operations.create_user(username, password, email)
     user = sql_operations.get_user_by_email(email)
     session['user_id'] = user[0]
-    return jsonify({"success": True, "redirect": url_for('index')})
+    return redirect(url_for('index'))
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -43,7 +61,10 @@ def login():
     password = request.form['password']
     user = sql_operations.get_user_by_email(email)
 
-    if user and check_password_hash(user[2], password):
+    if user and verify(user[2], password):
+        print(f"{email:<20}")
+        print(f"{password:<20}")
+        print('Sucess.')
         session['user_id'] = user[0]
         return jsonify({"success": True, "redirect": url_for('index')})
     else:
@@ -68,56 +89,64 @@ def index():
 @app.route('/create_table', methods=['GET', 'POST'])
 @login_required
 def table_creator():
+    user = sql_operations.get_user(session['user_id'])
     user_db = str(sql_operations.get_user(session['user_id'])[3].split('@')[0]) + '_db'
+    tables = sql_operations.get_user_tables_preview(user_db)
+    if user[0] != 1 and tables != []:
+        return redirect(url_for('not_eligible'))
+        
+    if request.method != 'POST':
+        return render_template('table_creation.html', user_db=user_db)
     
-    if request.method == 'POST':
-        table_name = request.form['table_name']
-        num_columns = int(request.form['num_columns'])
-        columns = []
-        for i in range(1, num_columns + 1):
-            column_name = request.form[f'column_name_{i}']
-            column_type = 'text'
-            columns.append((column_name, column_type))
-        try:
-            false_columns = ["id", "ids", "id_user", "id_user_chart", 'order']
-            error_message = []
+    table_name = request.form['table_name']
+    num_columns = int(request.form['num_columns'])
+    columns = []
+    for i in range(1, num_columns + 1):
+        column_name = request.form[f'column_name_{i}']
+        column_type = 'text'
+        columns.append((column_name, column_type))
+    try:
+        false_columns = ["id", "ids", "id_user", "id_user_chart", 'order']
+        error_message = []
+        
+        for column in columns:
+            if column[0].lower() in false_columns:
+                error_message = f"Column name cannot be '{column[0]}'."
+                return jsonify({"success": False, "message": error_message})
+            
+        sql_operations.create_table(user_db, table_name, columns)
+        # Insert data if provided
+        data_rows = []
+        row_index = 0
+        while True:
+            row_data = {}
             for column in columns:
-                if column[0].lower() in false_columns:
-                    error_message = f"Column name cannot be '{column[0]}'."
-                    return jsonify({"success": False, "message": error_message})
-            sql_operations.create_table(user_db, table_name, columns)
-            # Insert data if provided
-            data_rows = []
-            row_index = 0
-            while True:
-                row_data = {}
-                for column in columns:
-                    key = f"data_row_{row_index}_data_{column[0]}"
-                    if key in request.form:
-                        row_data[column[0]] = request.form[key]
-                    else:
-                        break
-                if row_data:
-                    data_rows.append(row_data)
-                    row_index += 1
+                key = f"data_row_{row_index}_data_{column[0]}"
+                if key in request.form:
+                    row_data[column[0]] = request.form[key]
                 else:
                     break
+            if row_data:
+                data_rows.append(row_data)
+                row_index += 1
+            else:
+                break
 
-            for row_data in data_rows:
-                sql_operations.insert_data(table_name, row_data, user_db)
-            
-            # Fetch the newly created table data
-            table_html = sql_operations.get_data2(user_db, table_name)
-            
-            return jsonify({
-                "success": True, 
-                "message": f"Table '{table_name}' created successfully in users database.",
-                "table_html": table_html
-            })
-        except Exception as e:
-            return jsonify({"success": False, "message": str(e)})
+        for row_data in data_rows:
+            sql_operations.insert_data(table_name, row_data, user_db)
+        
+        # Fetch the newly created table data
+        table_html = sql_operations.get_data2(user_db, table_name)
+        
+        return jsonify({
+            "success": True, 
+            "message": f"Table '{table_name}' created successfully in users database.",
+            "table_html": table_html
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
     
-    return render_template('table_creation.html', user_db=user_db)
+    
 
 
 @app.route('/delete_table', methods=['POST'])
@@ -205,19 +234,6 @@ def delete_chart():
     success = sql_operations.delete_chart(user_db, chart_id)
     return jsonify({"success": success})
 
-@app.route('/custom_query', methods=['GET', 'POST'])
-@login_required
-def custom_query():
-    user_db = str(sql_operations.get_user(session['user_id'])[3].split('@')[0]) + '_db'
-    if request.method == 'POST':
-        query = request.form['query']
-        try:
-            result = sql_operations.execute_custom_query(user_db, query)
-            return result
-        except Exception as e:
-            return str(e), 400
-    return render_template('custom_query.html', user_db=user_db)
-
 @app.route('/get_table_data', methods=['POST'])
 @login_required
 def get_table_data():
@@ -256,14 +272,14 @@ def delete_account():
     sql_operations.delete_user(user_id)
     session.pop('user_id', None)
 
-@app.route('/pricing')
-def pricing():
-    return render_template('pricing.html')
-
 @app.route('/custom_charts', methods=['GET', 'POST'])
 @login_required
 def custom_charts():
-    user_db = str(sql_operations.get_user(session['user_id'])[3].split('@')[0]) + '_db'
+    user = sql_operations.get_user(session['user_id'])
+    print(user[0])
+    if user[0] != 1:  # If the user is not an vip, redirect to pricing page
+        return redirect(url_for('not_eligible'))
+    user_db = str(user[3].split('@')[0]) + '_db'
     tables = sql_operations.get_database_tables(user_db)
     
     if request.method == 'POST':
@@ -291,7 +307,8 @@ def get_chart_data():
     except Exception as e:
         print(f"Error fetching chart data: {str(e)}")
         return jsonify({"error": str(e)}), 500
+    
 
 if __name__ == "__main__":
     sql_operations.ensure_database_structure()
-    app.run(host='0.0.0.0', port=os.getenv('PORT'))
+    app.run(host='0.0.0.0',  debug=True)

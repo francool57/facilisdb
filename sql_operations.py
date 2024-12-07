@@ -1,18 +1,19 @@
 import pandas as pd
 import mysql.connector.pooling
-from werkzeug.security import generate_password_hash, check_password_hash
 
 db_config = {
-    "host": "94.62.133.84",
-    "user": "xxannydev", #xxannydev
-    "password": "oMemf2812!"  #nFCZhA-hWLN5xUmxaKI-ow
+    "host": "localhost",
+    "user": "root",
+    "password": "oMemf2812!",  
+    "ssl_disabled": True
 }
 
 users_db_config = {
-    "host": "94.62.133.84",
-    "user": "xxannydev",
+    "host": "localhost",
+    "user": "root",
     "password": "oMemf2812!",
     "database": "websitedata",
+    "ssl_disabled": True
 }
 
 db_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name="mypool", pool_size=5, **db_config)
@@ -29,6 +30,7 @@ def get_users_db_connection():
 def get_user_databases(email):
     connection = get_db_connection()
     cursor = connection.cursor()
+    
     try:
         cursor.execute("USE " + email.split("@")[0] + "_db")
         return email.split("@")[0] + "_db"
@@ -45,6 +47,7 @@ def get_user(id):
         if not user:
             raise ValueError(f"No user found with id {id}")
         return user
+    
     except mysql.connector.Error as err:
         connection.reconnect(attempts=3, delay=5)
         cursor.execute("SELECT * FROM users WHERE id = %s", (id,))
@@ -52,6 +55,7 @@ def get_user(id):
         if not user:
             raise ValueError(f"No user found with id {id}")
         return user
+    
     finally:
         cursor.close()
         connection.close()
@@ -75,8 +79,7 @@ def create_user(username, password, email):
         print('Backend-debug: ' + username + ":" + password + "::" + email)
         cursor.execute("CREATE DATABASE IF NOT EXISTS " + email.split("@")[0] + "_db")
         connection.commit()
-        hashed_password = generate_password_hash(password)
-        users_cursor.execute("INSERT INTO users (username, password, email) VALUES (%s, %s, %s)", (username, hashed_password, email))
+        users_cursor.execute("INSERT INTO users (username, password, email) VALUES (%s, %s, %s)", (username, password, email))
         users_connection.commit()
     finally:
         cursor.close()
@@ -199,25 +202,6 @@ def delete_data(table, data, database):
         cursor.close()
         connection.close()
 
-def execute_custom_query(database, query):
-    connection = get_db_connection()
-    cursor = connection.cursor()
-    try:
-        cursor.execute(f"USE {database}")
-        if query.strip().upper().startswith('SELECT'):
-            cursor.execute(query)
-            result = cursor.fetchall()
-            columns = [i[0] for i in cursor.description]
-            df = pd.DataFrame(result, columns=columns)
-            return df.to_html(classes='mystyle', index=False, escape=True)
-        else:
-            cursor.execute(query)
-            connection.commit()
-            return f"Query executed successfully. Rows affected: {cursor.rowcount}"
-    finally:
-        cursor.close()
-        connection.close()
-
 def get_data_range(database, table, start_row, end_row):
     connection = get_db_connection()
     cursor = connection.cursor()
@@ -327,6 +311,7 @@ def save_chart(database, chart_data):
         connection.close()
 
 def create_user_charts_table(database):
+    
     connection = get_db_connection()
     cursor = connection.cursor()
     try:
