@@ -10,7 +10,7 @@
 
 *Transform your data into stunning visualizations with our intuitive dashboard platform* 🚀
 
-[Features](#-features) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Documentation](#-documentation)
+[Features](#-features) • [Documentation](#-documentation) • [Security Features](#-security-features) • [Contributing](#-contributing)
 
 </div>
 
