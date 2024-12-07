@@ -1,8 +1,7 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 import sql_operations
 from functools import wraps
-from barr4 import verify
-from barr4 import encrypt
+from barr4 import verify, encrypt
 from datetime import timedelta
 import os
 from markupsafe import escape
