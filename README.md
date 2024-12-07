@@ -23,13 +23,14 @@
 ### 🔐 User Management
 - **Secure Authentication** - Register and login with confidence
 - **Profile Customization** - Personalize your experience
-- **Role-Based Access** - VIP features for power users
+- **Role-Based Access** - VIP features for paid users
 
 ### 📋 Data Management
 - **Dynamic Tables** - Create and customize your data structure
 - **Flexible Import** - Add data your way
 - **Easy Updates** - Modify and maintain your datasets
 
+#### 👑 For VIP's
 ### 📈 Visualization Suite
 - **Custom Charts** - Create stunning visualizations
 - **Save & Share** - Store your favorite configurations
@@ -42,40 +43,14 @@
 ```bash
 Python 3.x
 Flask
-SQLite
+MySQL
 ```
-
-### 🛠 Installation
-
-1️⃣ **Clone & Navigate**
-```bash
-git clone [repository-url]
-cd dataviz-hub
-```
-
-2️⃣ **Set Up Environment**
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3️⃣ **Install Dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-4️⃣ **Launch**
-```bash
-python app.py
-```
-
-🎉 Visit `http://localhost:5000` and start visualizing!
 
 ## 📘 Documentation
 
 ### Project Structure
 ```
-📁 dataviz-hub/
+📁 facilisdb-hub/
 ├── 📄 app.py              # Application core
 ├── 📄 sql_operations.py   # Database logic
 ├── 📁 static/            
@@ -99,21 +74,12 @@ python app.py
 
 ### 🔒 Security Features
 
-- 🔐 Encrypted passwords with `barr4`
+- 🔐 Encrypted passwords with `barr4` (I created it, very secure)
 - 🚦 Session-based authentication
 - 🛡️ SQL injection protection
 - 🔍 Input validation
 
 ## 🎨 Customization
-
-### Theme Configuration
-```python
-# In app.py
-app.config['THEME'] = {
-    'primary_color': '#007bff',
-    'secondary_color': '#6c757d'
-}
-```
 
 ### Chart Types
 - 📊 Bar Charts
@@ -146,7 +112,7 @@ Need help? Check out our:
 
 <div align="center">
 
-Made with ❤️ by Your Team
+Made with ❤️ by Francisco B
 
 [⬆ Back to top](#-dataviz-hub)
 
