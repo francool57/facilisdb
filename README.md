@@ -71,7 +71,7 @@ MySQL
 
 ### 🔒 Security Features
 
-- 🔐 Encrypted passwords with `barr4` (I created it, very secure)
+- 🔐 Encrypted passwords with [barr4](https://github.com/francool57/barr4encrypt) (I created it, very secure)
 - 🚦 Session-based authentication
 - 🛡️ SQL injection protection
 - 🔍 Input validation
@@ -86,8 +86,6 @@ MySQL
 
 ## 🤝 Contributing
 
-We love your input! Check out our [Contributing Guidelines](CONTRIBUTING.md) to get started.
-
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
@@ -101,9 +99,8 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## 💫 Support
 
 Need help? Check out our:
-- 📖 [Documentation Wiki](wiki)
-- 💬 [Discord Community](discord)
-- 📧 [Support Email](mailto:support@example.com)
+- 💬 [Twitter](https://x.com/dev_barreira)
+- 📧 [Support Email](mailto:franbarreira0@gmail.com)
 
 ---
 
@@ -111,6 +108,6 @@ Need help? Check out our:
 
 Made with ❤️ by Francisco B
 
-[⬆ Back to top](#-dataviz-hub)
+[⬆ Back to top](#-facilisdb-hub)
 
 </div>
