@@ -1,4 +1,4 @@
-# 📊 DataViz Hub
+# 📊 FacilisDB Hub
 
 <div align="center">
 
