@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![DataViz Hub Banner](https://cdn.discordapp.com/attachments/1285671564960075786/1285687915170762772/image.png?ex=6755f72d&is=6754a5ad&hm=c87e63b2be82d556bd61fcebd38ebc7d925b36ec53fddd8fcd1436eb636f110b)
+![FacilisDB Hub Banner](https://cdn.discordapp.com/attachments/1285671564960075786/1285687856370552893/image.png?ex=68a6ce5f&is=68a57cdf&hm=faeea2b48dc5be07d3e1bb5fbd97d4cdc08ba71ecfc50b5dc7bfa0094bdace70&)
 
 [![Python](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-Latest-green.svg)](https://flask.palletsprojects.com/)
@@ -83,14 +83,6 @@ MySQL
 - 📈 Line Graphs
 - 🥧 Pie Charts
 - 📉 Scatter Plots
-
-## 🤝 Contributing
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## 📜 License
 
