@@ -2,16 +2,16 @@ import pandas as pd
 import mysql.connector.pooling
 
 db_config = {
-    "host": "0.0.0.0",
+    "host": "127.0.0.1",
     "user": "root",
-    "password": "xxxxxxxxx",  
+    "password": "********",  
     "ssl_disabled": True
 }
 
 users_db_config = {
-    "host": "0.0.0.0",
+    "host": "127.0.0.1",
     "user": "root",
-    "password": "xxxxxxxxx",
+    "password": "********",
     "database": "websitedata",
     "ssl_disabled": True
 }

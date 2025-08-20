@@ -10,6 +10,7 @@ app = Flask(__name__)
 application = app
 app.secret_key = str(os.urandom(12).hex())  # Set a secret key for session management
 
+
 # Login required decorator
 def login_required(f):
     @wraps(f)
@@ -47,12 +48,12 @@ def register():
     email = (request.form['email'])
 
     if sql_operations.get_user_by_email(email):
-        return render_template('register.html', error='Email already registered')
+        return jsonify({"success": False, "error": 'Email already registered'})
     
     sql_operations.create_user(username, password, email)
     user = sql_operations.get_user_by_email(email)
     session['user_id'] = user[0]
-    return redirect(url_for('index'))
+    return jsonify({"success": True, "redirect": url_for('index')})
 
 @app.route('/login', methods=['POST'])
 def login():
