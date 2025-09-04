@@ -275,6 +275,24 @@ def get_database_tables(database):
         cursor.close()
         connection.close()
 
+def get_database_tables2(database):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.execute(f"USE {database}")
+        cursor.execute("SHOW TABLES")
+        tables = [table[0] for table in cursor.fetchall()]
+        table_info = []
+        for table in tables:
+            if table != "user_charts":  
+                cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                row_count = cursor.fetchone()[0]
+                table_info.append({'name': table, 'row_count': row_count})
+        return table_info
+    finally:
+        cursor.close()
+        connection.close()
+
 def get_data(db_name, table_name):
     connection = get_db_connection()
     cursor = connection.cursor()
