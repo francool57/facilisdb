@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![FacilisDB Hub Banner](https://prnt.sc/yK_OFcnTpw7V)
+![FacilisDB Hub Banner](https://img001.prntscr.com/file/img001/zq9_3uHpQfq7wZygN24hxg.png)
 
 [![Python](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-Latest-green.svg)](https://flask.palletsprojects.com/)
