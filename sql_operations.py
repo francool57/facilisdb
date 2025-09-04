@@ -1,20 +1,27 @@
 import pandas as pd
 import mysql.connector.pooling
 
+def userdbname(email):
+    return email.split("@")[0] + "_db"
+
+# Database configuration
+
 db_config = {
-    "host": "127.0.0.1",
+    "host": "0.0.0.0",
     "user": "root",
-    "password": "********",  
-    "ssl_disabled": True
+    "password": "*******",  
+    "ssl_disabled": True    # Should be turned ON for WSGI servers
 }
 
 users_db_config = {
-    "host": "127.0.0.1",
+    "host": "0.0.0.0",
     "user": "root",
-    "password": "********",
+    "password": "*******",
     "database": "websitedata",
-    "ssl_disabled": True
+    "ssl_disabled": True    # Should be turned ON for WSGI servers
 }
+
+# Database pool for easier and more stable connections
 
 db_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name="mypool", pool_size=5, **db_config)
 users_db_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name="users_pool", pool_size=5, **users_db_config)
@@ -25,20 +32,24 @@ def get_db_connection():
 def get_users_db_connection():
     return users_db_pool.get_connection()
 
-# server-user ops
+# Server-user ops
 
 def get_user_databases(email):
     connection = get_db_connection()
     cursor = connection.cursor()
     
     try:
-        cursor.execute("USE " + email.split("@")[0] + "_db")
-        return email.split("@")[0] + "_db"
+        cursor.execute("USE " + userdbname(email))
+        return userdbname(email)
     finally:
         cursor.close()
         connection.close()
 
 def get_user(id):
+    '''
+        Gets information from logged in users
+    '''
+
     connection = get_users_db_connection()
     cursor = connection.cursor()
     try:
@@ -61,11 +72,55 @@ def get_user(id):
         connection.close()
 
 def get_user_by_email(email):
+    '''
+        Used for login/logon operations
+    '''
     connection = get_users_db_connection()
     cursor = connection.cursor()
     try:
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         return cursor.fetchone()
+    finally:
+        cursor.close()
+        connection.close()
+
+def get_all_users():
+    connection = get_users_db_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.execute("SELECT * FROM users")
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        connection.close()
+
+def verify_admin(email):
+    connection = get_users_db_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.execute("SELECT * FROM admins WHERE adminscol = %s", (email,))
+        if cursor.fetchone():
+            return True
+        else:
+            return False
+    finally:
+        cursor.close()
+        connection.close()
+    
+def change_email(email, new_email):
+    connection = get_users_db_connection()
+    cursor = connection.cursor()
+    try:
+        print("UPDATE users SET email = %s WHERE email = %s", (new_email, email))
+        
+        for table in get_database_tables(userdbname(email)):
+            print(f"Altering table {table} to change database reference...")
+            cursor.execute(f"RENAME TABLE {email.split('@')[0]}_db.{table} TO {new_email.split('@')[0]}_db.{table}")
+            connection.commit()
+        
+        cursor.execute(f'DROP DATABASE {userdbname(email)}')
+        cursor.execute("UPDATE users SET email = %s WHERE email = %s", (new_email, email))
+        connection.commit()
     finally:
         cursor.close()
         connection.close()
@@ -76,8 +131,7 @@ def create_user(username, password, email):
     users_connection = get_users_db_connection()
     users_cursor = users_connection.cursor()
     try:
-        print('Backend-debug: ' + username + ":" + password + "::" + email)
-        cursor.execute("CREATE DATABASE IF NOT EXISTS " + email.split("@")[0] + "_db")
+        cursor.execute("CREATE DATABASE IF NOT EXISTS " + userdbname(email))
         connection.commit()
         users_cursor.execute("INSERT INTO users (username, password, email) VALUES (%s, %s, %s)", (username, password, email))
         users_connection.commit()
@@ -100,17 +154,6 @@ def update_username(id, new_username):
 
 # Read operations
 
-def get_database_tables(database):
-    connection = get_db_connection()
-    cursor = connection.cursor()
-    try:
-        cursor.execute(f"USE {database}")
-        cursor.execute("SHOW TABLES WHERE Tables_in_" + database + " NOT LIKE 'user_charts'")
-        return [table[0] for table in cursor.fetchall()]
-    finally:
-        cursor.close()
-        connection.close()
-
 def get_table_columns(database, table):
     connection = get_db_connection()
     cursor = connection.cursor()
@@ -118,24 +161,6 @@ def get_table_columns(database, table):
         cursor.execute(f"USE {database}")
         cursor.execute(f"DESCRIBE {table}")
         return [col[0] for col in cursor.fetchall()]
-    finally:
-        cursor.close()
-        connection.close()
-
-def get_data(db_name, table_name):
-    connection = get_db_connection()
-    cursor = connection.cursor()
-    try:
-        cursor.execute(f"USE {db_name}")
-        cursor.execute(f"SELECT * FROM {table_name}")
-        
-        # Fetch column names
-        column_names = [description[0] for description in cursor.description]
-        # Fetch all rows
-        rows = cursor.fetchall()
-        
-        # Return column names as the first row, followed by data rows
-        return [[column for column in column_names]] + list(rows)
     finally:
         cursor.close()
         connection.close()
@@ -239,25 +264,36 @@ def get_user_tables_preview(database):
         cursor.close()
         connection.close()
 
-def get_database_tables2(database):
+def get_database_tables(database):
     connection = get_db_connection()
     cursor = connection.cursor()
     try:
         cursor.execute(f"USE {database}")
-        cursor.execute("SHOW TABLES")
-        tables = [table[0] for table in cursor.fetchall()]
-        table_info = []
-        for table in tables:
-            if table != "user_charts":  
-                cursor.execute(f"SELECT COUNT(*) FROM {table}")
-                row_count = cursor.fetchone()[0]
-                table_info.append({'name': table, 'row_count': row_count})
-        return table_info
+        cursor.execute("SHOW TABLES WHERE Tables_in_" + database + " NOT LIKE 'user_charts'")
+        return [table[0] for table in cursor.fetchall()]
     finally:
         cursor.close()
         connection.close()
 
-def get_data2(database, table):
+def get_data(db_name, table_name):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.execute(f"USE {db_name}")
+        cursor.execute(f"SELECT * FROM {table_name}")
+        
+        # Fetch column names
+        column_names = [description[0] for description in cursor.description]
+        # Fetch all rows
+        rows = cursor.fetchall()
+        
+        # Return column names as the first row, followed by data rows
+        return [[column for column in column_names]] + list(rows)
+    finally:
+        cursor.close()
+        connection.close()
+
+def get_data_html(database, table):
     connection = get_db_connection()
     cursor = connection.cursor()
     try:
@@ -287,6 +323,12 @@ def get_data2(database, table):
     finally:
         cursor.close()
         connection.close()
+
+'''
+
+    USER CHARTS
+
+'''
 
 def save_chart(database, chart_data):
     connection = get_db_connection()

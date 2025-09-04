@@ -2,9 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 import sql_operations
 from functools import wraps
 from barr4 import verify, encrypt
-from datetime import timedelta
 import os
-from markupsafe import escape
 
 app = Flask(__name__)
 application = app
@@ -136,7 +134,7 @@ def table_creator():
             sql_operations.insert_data(table_name, row_data, user_db)
         
         # Fetch the newly created table data
-        table_html = sql_operations.get_data2(user_db, table_name)
+        table_html = sql_operations.get_data_html(user_db, table_name)
         
         return jsonify({
             "success": True, 
