@@ -71,7 +71,7 @@ MySQL
 
 ### 🔒 Security Features
 
-- 🔐 Encrypted passwords with [barr4](https://github.com/francool57/barr4encrypt) (I created it, very secure)
+- 🔐 Encrypted passwords with [barr4](https://github.com/francool57/barr4encrypt) (it works its good enough)
 - 🚦 Session-based authentication
 - 🛡️ SQL injection protection
 - 🔍 Input validation
