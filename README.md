@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![DataViz Hub Banner](https://cdn.discordapp.com/attachments/1285671564960075786/1285687915170762772/image.png?ex=6755f72d&is=6754a5ad&hm=c87e63b2be82d556bd61fcebd38ebc7d925b36ec53fddd8fcd1436eb636f110b)
+![FacilisDB Hub Banner](https://prnt.sc/yK_OFcnTpw7V)
 
 [![Python](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-Latest-green.svg)](https://flask.palletsprojects.com/)
