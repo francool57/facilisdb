@@ -94,6 +94,10 @@ Need help? Check out our:
 - 💬 [Twitter](https://x.com/dev_barreira)
 - 📧 [Support Email](mailto:franbarreira0@gmail.com)
 
+## 🦀 Screenshots
+![FacilisDB](https://img001.prntscr.com/file/img001/LO6wiMz3Ry6RIkPKMKo2_A.png)
+![FacilisDB](https://img001.prntscr.com/file/img001/hgl_Jln6QICoWmGzeM8olA.png)
+
 ---
 
 <div align="center">
