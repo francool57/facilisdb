@@ -9,6 +9,7 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 *Transform your data into stunning visualizations with our intuitive dashboard platform* 
+
 *yea i know if the load was too big this would easily break :p
 
 [Features](#-features) • [Documentation](#-documentation) • [Security Features](#-security-features) • [Contributing](#-contributing)
